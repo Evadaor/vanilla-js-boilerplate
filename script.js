@@ -5,8 +5,10 @@ let happiness = 100;
 const healthBar = document.querySelector('.health-bar');
 const foodBar = document.querySelector('.food-bar');
 const happinessBar = document.querySelector('.happiness-bar');
-const reviveButton = document.getElementById('revive-button');
 const feedButton = document.getElementById('feed-button');
+const playButton = document.getElementById('play-button');
+const medButton = document.getElementById('med-button');
+const reviveButton = document.getElementById('revive-button');
 
 function updateBars() {
     healthBar.style.width = `${health}%`;
@@ -26,26 +28,52 @@ function decreaseFood() {
     }
     if (health <= 0) {
         health = 0;
-        document.getElementById('revive-button').style.display = 'block';
+        document.querySelector('.actions').style.display = 'none';
+        reviveButton.style.display = 'block';
     }
     updateBars();
 }
 
 function feedPet() {
-    food = 100;
-    updateBars();
+    if (health > 0) {
+        food = Math.min(food + 10, 100);
+        updateBars();
+    }
+}
+
+function playWithPet() {
+    if (health > 0) {
+        happiness = Math.min(happiness + 10, 100);
+        updateBars();
+    }
+}
+
+function medPet() {
+    if (health > 0) {
+        health = Math.min(health + 10, 100);
+        updateBars();
+    }
 }
 
 function revivePet() {
     health = 60;
     food = 60;
     happiness = 60;
-    document.getElementById('revive-button').style.display = 'none';
+    document.querySelector('.actions').style.display = 'flex';
+    reviveButton.style.display = 'none';
     updateBars();
 }
 
 feedButton.addEventListener('click', feedPet);
+playButton.addEventListener('click', playWithPet);
+medButton.addEventListener('click', medPet);
 reviveButton.addEventListener('click', revivePet);
 
 setInterval(decreaseFood, 1000);
 updateBars();
+
+// Retrieve and display the user's Telegram username
+window.Telegram.WebApp.ready(function() {
+    const username = window.Telegram.WebApp.initDataUnsafe.user.username;
+    document.getElementById('username').innerText = `${username} (CEO)`;
+});
