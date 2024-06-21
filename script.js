@@ -34,6 +34,16 @@ function decreaseFood() {
     updateBars();
 }
 
+function decreaseHappiness() {
+    if (happiness > 0) {
+        happiness -= 5;
+    }
+    if (happiness < 0) {
+        happiness = 0;
+    }
+    updateBars();
+}
+
 function feedPet() {
     if (health > 0) {
         food = Math.min(food + 10, 100);
@@ -70,6 +80,7 @@ medButton.addEventListener('click', medPet);
 reviveButton.addEventListener('click', revivePet);
 
 setInterval(decreaseFood, 1000);
+setInterval(decreaseHappiness, 1000);
 updateBars();
 
 // Retrieve and display the user's Telegram username
