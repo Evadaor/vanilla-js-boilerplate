@@ -1,33 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Virtual Pet TMA</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Pet Game</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app">
-    <div class="pet-container">
-      <img src="https://maroon-historic-weasel-134.mypinata.cloud/ipfs/QmbAdwa7FNL9t79ob92CopqQcYcbPFg2SW8WP4aBhedH2M" alt="Pet" id="pet-image">
-      <div id="notification" class="notification"></div>
+    <div class="container">
+        <div class="header">
+            <h1>Hamster Kombat</h1>
+            <div class="user-info">
+                <span id="username">weirdo 45 (CEO)</span>
+                <button id="exchange-button">Choose exchange</button>
+            </div>
+        </div>
+        <div class="stats">
+            <div class="stat">
+                <span>Earn per tap</span>
+                <span>+3</span>
+            </div>
+            <div class="stat">
+                <span>Coins to level up</span>
+                <span>100K</span>
+            </div>
+            <div class="stat">
+                <span>Profit per hour</span>
+                <span>0</span>
+            </div>
+        </div>
+        <div class="currency">
+            <span id="currency-amount">46,644</span>
+        </div>
+        <div class="pet">
+            <img id="pet-image" src="https://maroon-historic-weasel-134.mypinata.cloud/ipfs/QmbAdwa7FNL9t79ob92CopqQcYcbPFg2SW8WP4aBhedH2M" alt="Pet">
+        </div>
+        <div class="bars">
+            <div class="bar">
+                <span>Health</span>
+                <div class="progress">
+                    <div class="progress-bar health-bar"></div>
+                </div>
+            </div>
+            <div class="bar">
+                <span>Food</span>
+                <div class="progress">
+                    <div class="progress-bar food-bar"></div>
+                </div>
+            </div>
+            <div class="bar">
+                <span>Happiness</span>
+                <div class="progress">
+                    <div class="progress-bar happiness-bar"></div>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <button id="feed-button">Feed</button>
+            <button id="revive-button" style="display:none;">Revive</button>
+        </div>
     </div>
-    <div class="status-bars">
-      <div>
-        <span>Health:</span>
-        <div class="bar" id="health-bar"></div>
-      </div>
-      <div>
-        <span>Food:</span>
-        <div class="bar" id="food-bar"></div>
-      </div>
-      <div>
-        <span>Happiness:</span>
-        <div class="bar" id="happiness-bar"></div>
-      </div>
-    </div>
-    <button id="revive-btn" class="hidden">Revive</button>
-  </div>
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
