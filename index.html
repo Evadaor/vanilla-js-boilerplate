@@ -1,32 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Pet Game</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Pet TMA</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-container">
-        <h1>Virtual Pet Game</h1>
-        <img src="https://maroon-historic-weasel-134.mypinata.cloud/ipfs/QmbAdwa7FNL9t79ob92CopqQcYcbPFg2SW8WP4aBhedH2M" alt="Pet" class="pet-image">
-        <div class="bars">
-            <div class="bar">
-                <label>Health</label>
-                <div id="health-bar" class="progress-bar"></div>
-            </div>
-            <div class="bar">
-                <label>Food</label>
-                <div id="food-bar" class="progress-bar"></div>
-            </div>
-            <div class="bar">
-                <label>Happiness</label>
-                <div id="happiness-bar" class="progress-bar"></div>
-            </div>
-        </div>
-        <div id="notification" class="notification"></div>
-        <button id="revive-button" class="hidden">Revive</button>
+  <div id="app">
+    <div class="pet-container">
+      <img src="https://maroon-historic-weasel-134.mypinata.cloud/ipfs/QmbAdwa7FNL9t79ob92CopqQcYcbPFg2SW8WP4aBhedH2M" alt="Pet" id="pet-image">
+      <div id="notification" class="notification"></div>
     </div>
-    <script src="script.js"></script>
+    <div class="status-bars">
+      <div>
+        <span>Health:</span>
+        <div class="bar" id="health-bar"></div>
+      </div>
+      <div>
+        <span>Food:</span>
+        <div class="bar" id="food-bar"></div>
+      </div>
+      <div>
+        <span>Happiness:</span>
+        <div class="bar" id="happiness-bar"></div>
+      </div>
+    </div>
+    <button id="revive-btn" class="hidden">Revive</button>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>

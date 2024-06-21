@@ -1,60 +1,35 @@
 body {
-    font-family: Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
-    background-color: #f4f4f4;
-}
-
-.game-container {
+    background-color: #f0f0f0;
+  }
+  
+  .pet-container {
     text-align: center;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.pet-image {
+  }
+  
+  img#pet {
     width: 200px;
-    height: 200px;
-}
-
-.bars {
-    margin: 20px 0;
-}
-
-.bar {
-    margin: 10px 0;
-}
-
-.progress-bar {
-    width: 100%;
+    height: auto;
+  }
+  
+  .bars {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .bar {
+    width: 100px;
     height: 20px;
-    background-color: #ddd;
-    border-radius: 10px;
-    overflow: hidden;
-    position: relative;
-}
-
-.progress-bar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(to right, #76c7c0, #34a4a0);
-    transition: width 0.3s;
-}
-
-.hidden {
-    display: none;
-}
-
-.notification {
-    margin: 20px 0;
-    font-size: 1.2em;
-    color: red;
-}
+    border: 1px solid #333;
+    margin: 0 5px;
+  }
+  
+  #notification {
+    margin-top: 20px;
+    font-weight: bold;
+  }
+  
