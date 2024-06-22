@@ -1,45 +1,81 @@
+import { showToast, hideToast } from 'mark42';
+
 let health = 100;
 let food = 100;
 let happiness = 100;
+let coins = 46644;
+let level = 1;
+let experience = 0;
 
-const healthBar = document.querySelector('.health-bar');
-const foodBar = document.querySelector('.food-bar');
-const happinessBar = document.querySelector('.happiness-bar');
-const feedButton = document.getElementById('feed-button');
-const playButton = document.getElementById('play-button');
-const medButton = document.getElementById('med-button');
-const reviveButton = document.getElementById('revive-button');
+const elements = {
+    healthBar: document.querySelector('.health-bar'),
+    foodBar: document.querySelector('.food-bar'),
+    happinessBar: document.querySelector('.happiness-bar'),
+    levelBar: document.querySelector('.level-bar'),
+    feedButton: document.getElementById('feed-button'),
+    playButton: document.getElementById('play-button'),
+    medButton: document.getElementById('med-button'),
+    reviveButton: document.getElementById('revive-button'),
+    buyFoodButton: document.getElementById('buy-food'),
+    buyToyButton: document.getElementById('buy-toy'),
+    buyMedButton: document.getElementById('buy-med'),
+    currencyAmount: document.getElementById('currency-amount'),
+    levelDisplay: document.getElementById('level'),
+    coinsToLevelUp: document.getElementById('coins-to-level-up'),
+    menuButtons: document.querySelectorAll('.menu-button'),
+    pages: document.querySelectorAll('.page')
+};
 
 function updateBars() {
-    healthBar.style.width = `${health}%`;
-    foodBar.style.width = `${food}%`;
-    happinessBar.style.width = `${happiness}%`;
+    elements.healthBar.style.width = `${health}%`;
+    elements.foodBar.style.width = `${food}%`;
+    elements.happinessBar.style.width = `${happiness}%`;
 }
 
+function updateCurrency() {
+    elements.currencyAmount.textContent = coins.toLocaleString();
+}
+
+function updateLevel() {
+    elements.levelDisplay.textContent = level;
+    elements.coinsToLevelUp.textContent = (level * 100000).toLocaleString();
+    elements.levelBar.style.width = `${(experience / (level * 100)) * 100}%`;
+}
+
+function showPage(pageId) {
+    elements.pages.forEach(page => {
+        page.classList.remove('active');
+        if (page.id === pageId) {
+            page.classList.add('active');
+        }
+    });
+}
+
+elements.menuButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        showPage(button.getAttribute('data-page'));
+    });
+});
+
 function decreaseFood() {
-    if (food > 0) {
-        food -= 1;
-    }
-    if (food < 50 && health > 0) {
-        health -= 0.2;
-    }
-    if (food === 0 && health > 0) {
-        health -= 1;
-    }
+    if (food > 0) food -= 1;
+    if (food < 50 && health > 0) health -= 0.2;
+    if (food === 0 && health > 0) health -= 1;
     if (health <= 0) {
         health = 0;
         document.querySelector('.actions').style.display = 'none';
-        reviveButton.style.display = 'block';
+        elements.reviveButton.style.display = 'block';
     }
     updateBars();
 }
 
 function decreaseHappiness() {
-    if (happiness > 0) {
-        happiness -= 5;
-    }
-    if (happiness < 0) {
-        happiness = 0;
+    if (happiness > 0) happiness -= 5;
+    if (happiness < 0) happiness = 0;
+    if (health <= 0) {
+        health = 0;
+        document.querySelector('.actions').style.display = 'none';
+        elements.reviveButton.style.display = 'block';
     }
     updateBars();
 }
@@ -70,21 +106,72 @@ function revivePet() {
     food = 60;
     happiness = 60;
     document.querySelector('.actions').style.display = 'flex';
-    reviveButton.style.display = 'none';
+    elements.reviveButton.style.display = 'none';
     updateBars();
 }
 
-feedButton.addEventListener('click', feedPet);
-playButton.addEventListener('click', playWithPet);
-medButton.addEventListener('click', medPet);
-reviveButton.addEventListener('click', revivePet);
+function earnCoins() {
+    coins += 3;
+    experience += 3;
+    if (experience >= level * 100) {
+        level++;
+        experience = 0;
+    }
+    updateCurrency();
+    updateLevel();
+    showToast("Coins earned!", { duration: 2000 });
+}
 
-setInterval(decreaseFood, 1000);
-setInterval(decreaseHappiness, 1000);
-updateBars();
+elements.feedButton.addEventListener('click', feedPet);
+elements.playButton.addEventListener('click', playWithPet);
+elements.medButton.addEventListener('click', medPet);
+elements.reviveButton.addEventListener('click', revivePet);
+
+elements.buyFoodButton.addEventListener('click', () => {
+    if (coins >= 10) {
+        coins -= 10;
+        food = Math.min(food + 10, 100);
+        updateCurrency();
+        updateBars();
+    }
+});
+
+elements.buyToyButton.addEventListener('click', () => {
+    if (coins >= 15) {
+        coins -= 15;
+        happiness = Math.min(happiness + 10, 100);
+        updateCurrency();
+        updateBars();
+    }
+});
+
+elements.buyMedButton.addEventListener('click', () => {
+    if (coins >= 20) {
+        coins -= 20;
+        health = Math.min(health + 10, 100);
+        updateCurrency();
+        updateBars();
+    }
+});
+
+// Initialize shake detection
+var shakeEvent = new Shake({threshold: 15});
+shakeEvent.start();
+
+// Handle shake event to earn coins
+window.addEventListener('shake', earnCoins, false);
 
 // Retrieve and display the user's Telegram username
 window.Telegram.WebApp.ready(function() {
     const username = window.Telegram.WebApp.initDataUnsafe.user.username;
     document.getElementById('username').innerText = `${username} (CEO)`;
 });
+
+// Periodically decrease food and happiness
+setInterval(decreaseFood, 1000);
+setInterval(decreaseHappiness, 1000);
+
+// Initial updates
+updateBars();
+updateCurrency();
+updateLevel();

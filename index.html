@@ -11,7 +11,7 @@
         <div class="header">
             <h1>My Pet</h1>
             <div class="user-info">
-                <span id="username"></span>
+                <span id="username">User123</span>
                 <button id="exchange-button">Choose exchange</button>
             </div>
         </div>
@@ -22,7 +22,7 @@
             </div>
             <div class="stat">
                 <span>Coins to level up</span>
-                <span>100K</span>
+                <span id="coins-to-level-up">100K</span>
             </div>
             <div class="stat">
                 <span>Profit per hour</span>
@@ -32,36 +32,79 @@
         <div class="currency">
             <span id="currency-amount">46,644</span>
         </div>
-        <div class="pet">
-            <img id="pet-image" src="https://maroon-historic-weasel-134.mypinata.cloud/ipfs/QmbAdwa7FNL9t79ob92CopqQcYcbPFg2SW8WP4aBhedH2M" alt="Pet">
+        <div id="level-container">
+            <span>Level <span id="level">1</span>/10</span>
+            <div class="progress">
+                <div class="progress-bar level-bar"></div>
+            </div>
         </div>
-        <div class="bars">
-            <div class="bar">
-                <span>Health</span>
-                <div class="progress">
-                    <div class="progress-bar health-bar"></div>
+        <div class="page active" id="home-page">
+            <div class="pet">
+                <img id="pet-image" src="https://maroon-historic-weasel-134.mypinata.cloud/ipfs/QmbAdwa7FNL9t79ob92CopqQcYcbPFg2SW8WP4aBhedH2M" alt="Pet">
+            </div>
+            <div class="bars">
+                <div class="bar">
+                    <span>Health</span>
+                    <div class="progress">
+                        <div class="progress-bar health-bar"></div>
+                    </div>
+                </div>
+                <div class="bar">
+                    <span>Food</span>
+                    <div class="progress">
+                        <div class="progress-bar food-bar"></div>
+                    </div>
+                </div>
+                <div class="bar">
+                    <span>Happiness</span>
+                    <div class="progress">
+                        <div class="progress-bar happiness-bar"></div>
+                    </div>
                 </div>
             </div>
-            <div class="bar">
+            <div class="actions">
+                <button id="feed-button">Feed</button>
+                <button id="play-button">Play</button>
+                <button id="med-button">Med</button>
+                <button id="revive-button" style="display:none;">Revive</button>
+            </div>
+        </div>
+        <div class="page" id="shop-page">
+            <h2>Shop</h2>
+            <div class="shop-item">
                 <span>Food</span>
-                <div class="progress">
-                    <div class="progress-bar food-bar"></div>
-                </div>
+                <button id="buy-food">Buy for 10 coins</button>
             </div>
-            <div class="bar">
-                <span>Happiness</span>
-                <div class="progress">
-                    <div class="progress-bar happiness-bar"></div>
-                </div>
+            <div class="shop-item">
+                <span>Toy</span>
+                <button id="buy-toy">Buy for 15 coins</button>
+            </div>
+            <div class="shop-item">
+                <span>Medicine</span>
+                <button id="buy-med">Buy for 20 coins</button>
             </div>
         </div>
-        <div class="actions">
-            <button id="feed-button">Feed</button>
-            <button id="play-button">Play</button>
-            <button id="med-button">Med</button>
-            <button id="revive-button" style="display:none;">Revive</button>
+        <div class="page" id="friends-page">
+            <h2>Friends</h2>
+            <p>View and interact with your friends' pets.</p>
+        </div>
+        <div class="page" id="earn-page">
+            <h2>Earn Coins</h2>
+            <p>Various methods to earn more coins.</p>
+        </div>
+        <div class="page" id="settings-page">
+            <h2>Settings</h2>
+            <p>Customize app settings and pet appearance.</p>
+        </div>
+        <div class="menu">
+            <button class="menu-button" data-page="home-page">Home</button>
+            <button class="menu-button" data-page="shop-page">Shop</button>
+            <button class="menu-button" data-page="friends-page">Friends</button>
+            <button class="menu-button" data-page="earn-page">Earn</button>
+            <button class="menu-button" data-page="settings-page">Settings</button>
         </div>
     </div>
+    <script src="shake.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
