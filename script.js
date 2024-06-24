@@ -3,9 +3,10 @@ import { showToast, hideToast } from 'mark42';
 let health = 100;
 let food = 100;
 let happiness = 100;
-let coins = 46644;
+let coins = 0;
 let level = 1;
 let experience = 0;
+let stepCount = 0;
 
 const elements = {
     healthBar: document.querySelector('.health-bar'),
@@ -111,8 +112,8 @@ function revivePet() {
 }
 
 function earnCoins() {
-    coins += 3;
-    experience += 3;
+    coins += 1; // Treat each step as a coin
+    experience += 1;
     if (experience >= level * 100) {
         level++;
         experience = 0;
@@ -122,44 +123,28 @@ function earnCoins() {
     showToast("Coins earned!", { duration: 2000 });
 }
 
-elements.feedButton.addEventListener('click', feedPet);
-elements.playButton.addEventListener('click', playWithPet);
-elements.medButton.addEventListener('click', medPet);
-elements.reviveButton.addEventListener('click', revivePet);
+// Step detection and coin update
+const handleMotion = (event) => {
+    const acceleration = event.accelerationIncludingGravity;
+    if (acceleration) {
+        const x = acceleration.x ?? 0;
+        const y = acceleration.y ?? 0;
+        const z = acceleration.z ?? 0;
 
-elements.buyFoodButton.addEventListener('click', () => {
-    if (coins >= 10) {
-        coins -= 10;
-        food = Math.min(food + 10, 100);
-        updateCurrency();
-        updateBars();
+        const magnitude = Math.sqrt(x * x + y * y + z * z);
+        if (magnitude > 12) { // Adjust threshold based on your testing
+            stepCount += 1;
+            earnCoins();
+        }
     }
+};
+
+window.addEventListener('devicemotion', handleMotion);
+
+// Cleanup event listener on page unload
+window.addEventListener('beforeunload', () => {
+    window.removeEventListener('devicemotion', handleMotion);
 });
-
-elements.buyToyButton.addEventListener('click', () => {
-    if (coins >= 15) {
-        coins -= 15;
-        happiness = Math.min(happiness + 10, 100);
-        updateCurrency();
-        updateBars();
-    }
-});
-
-elements.buyMedButton.addEventListener('click', () => {
-    if (coins >= 20) {
-        coins -= 20;
-        health = Math.min(health + 10, 100);
-        updateCurrency();
-        updateBars();
-    }
-});
-
-// Initialize shake detection
-var shakeEvent = new Shake({threshold: 15});
-shakeEvent.start();
-
-// Handle shake event to earn coins
-window.addEventListener('shake', earnCoins, false);
 
 // Retrieve and display the user's Telegram username
 window.Telegram.WebApp.ready(function() {
