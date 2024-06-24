@@ -7,6 +7,7 @@ let coins = 0;
 let level = 1;
 let experience = 0;
 let stepCount = 0;
+let lastAcceleration = { x: null, y: null, z: null };
 
 const elements = {
     healthBar: document.querySelector('.health-bar'),
@@ -23,9 +24,18 @@ const elements = {
     currencyAmount: document.getElementById('currency-amount'),
     levelDisplay: document.getElementById('level'),
     coinsToLevelUp: document.getElementById('coins-to-level-up'),
+    stepCountDisplay: document.getElementById('step-count'),
     menuButtons: document.querySelectorAll('.menu-button'),
     pages: document.querySelectorAll('.page')
 };
+
+// Check if elements exist
+for (let key in elements) {
+    if (!elements[key]) {
+        console.error(`${key} element not found`);
+        // Handle error or set default values
+    }
+}
 
 function updateBars() {
     elements.healthBar.style.width = `${health}%`;
@@ -123,40 +133,81 @@ function earnCoins() {
     showToast("Coins earned!", { duration: 2000 });
 }
 
-// Step detection and coin update
-const handleMotion = (event) => {
-    const acceleration = event.accelerationIncludingGravity;
-    if (acceleration) {
-        const x = acceleration.x ?? 0;
-        const y = acceleration.y ?? 0;
-        const z = acceleration.z ?? 0;
-
-        const magnitude = Math.sqrt(x * x + y * y + z * z);
-        if (magnitude > 12) { // Adjust threshold based on your testing
-            stepCount += 1;
-            earnCoins();
-        }
-    }
+const debounce = (func, delay) => {
+    let debounceTimer;
+    return function () {
+        const context = this;
+        const args = arguments;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => func.apply(context, args), delay);
+    };
 };
 
-window.addEventListener('devicemotion', handleMotion);
+const debouncedHandleMotion = debounce(handleMotion, 200);
 
-// Cleanup event listener on page unload
+window.addEventListener('devicemotion', function(event) {
+    detectStep(event.accelerationIncludingGravity);
+}, true);
+
 window.addEventListener('beforeunload', () => {
-    window.removeEventListener('devicemotion', handleMotion);
+    window.removeEventListener('devicemotion', debouncedHandleMotion);
+    saveState();
 });
 
-// Retrieve and display the user's Telegram username
 window.Telegram.WebApp.ready(function() {
     const username = window.Telegram.WebApp.initDataUnsafe.user.username;
     document.getElementById('username').innerText = `${username} (CEO)`;
 });
 
-// Periodically decrease food and happiness
+function saveState() {
+    const state = {
+        health,
+        food,
+        happiness,
+        coins,
+        level,
+        experience,
+        stepCount
+    };
+    localStorage.setItem('petState', JSON.stringify(state));
+}
+
+function loadState() {
+    const state = JSON.parse(localStorage.getItem('petState'));
+    if (state) {
+        health = state.health;
+        food = state.food;
+        happiness = state.happiness;
+        coins = state.coins;
+        level = state.level;
+        experience = state.experience;
+        stepCount = state.stepCount;
+        updateBars();
+        updateCurrency();
+        updateLevel();
+    }
+}
+
+window.addEventListener('load', loadState);
+
+function detectStep(acceleration) {
+    if (lastAcceleration.x !== null) {
+        let deltaX = Math.abs(lastAcceleration.x - acceleration.x);
+        let deltaY = Math.abs(lastAcceleration.y - acceleration.y);
+        let deltaZ = Math.abs(lastAcceleration.z - acceleration.z);
+
+        if (deltaX + deltaY + deltaZ > 3) { // Threshold for detecting steps
+            stepCount++;
+            elements.stepCountDisplay.innerText = stepCount;
+            earnCoins(); // Earn a coin for each step
+        }
+    }
+    lastAcceleration = acceleration;
+}
+
 setInterval(decreaseFood, 1000);
 setInterval(decreaseHappiness, 1000);
 
-// Initial updates
 updateBars();
 updateCurrency();
 updateLevel();
