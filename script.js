@@ -86,6 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function startCounting() {
         stepCount = 0;
+        coinCount = 0;
         accelerometerData = [];
         isCounting = true;
         startButton.style.display = "none";
