@@ -29,14 +29,6 @@ const elements = {
     pages: document.querySelectorAll('.page')
 };
 
-// Check if elements exist
-for (let key in elements) {
-    if (!elements[key]) {
-        console.error(`${key} element not found`);
-        // Handle error or set default values
-    }
-}
-
 function updateBars() {
     elements.healthBar.style.width = `${health}%`;
     elements.foodBar.style.width = `${food}%`;
