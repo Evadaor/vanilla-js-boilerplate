@@ -44,10 +44,7 @@ function updateLevel() {
 
 function showPage(pageId) {
     elements.pages.forEach(page => {
-        page.classList.remove('active');
-        if (page.id === pageId) {
-            page.classList.add('active');
-        }
+        page.classList.toggle('active', page.id === pageId);
     });
 }
 
@@ -122,56 +119,82 @@ function earnCoins() {
     showToast("Coins earned!", { duration: 2000 });
 }
 
-elements.feedButton.addEventListener('click', feedPet);
-elements.playButton.addEventListener('click', playWithPet);
-elements.medButton.addEventListener('click', medPet);
-elements.reviveButton.addEventListener('click', revivePet);
+// Shake detection
+let lastShakeTime = new Date().getTime();
+const shakeThreshold = 15;
+const shakeTimeout = 1000;
 
-elements.buyFoodButton.addEventListener('click', () => {
-    if (coins >= 10) {
-        coins -= 10;
-        food = Math.min(food + 10, 100);
-        updateCurrency();
-        updateBars();
+function handleMotionEvent(event) {
+    const { acceleration } = event;
+    if (!acceleration) return;
+
+    const currentTime = new Date().getTime();
+    if (currentTime - lastShakeTime > shakeTimeout) {
+        const shakeMagnitude = Math.sqrt(acceleration.x ** 2 + acceleration.y ** 2 + acceleration.z ** 2);
+        if (shakeMagnitude > shakeThreshold) {
+            lastShakeTime = currentTime;
+            earnCoins();
+        }
     }
-});
+}
 
-elements.buyToyButton.addEventListener('click', () => {
-    if (coins >= 15) {
-        coins -= 15;
-        happiness = Math.min(happiness + 10, 100);
-        updateCurrency();
-        updateBars();
-    }
-});
+if (window.DeviceMotionEvent) {
+    window.addEventListener('devicemotion', handleMotionEvent, false);
+} else {
+    alert('DeviceMotionEvent is not supported on your device.');
+}
 
-elements.buyMedButton.addEventListener('click', () => {
-    if (coins >= 20) {
-        coins -= 20;
-        health = Math.min(health + 10, 100);
-        updateCurrency();
-        updateBars();
-    }
-});
+function initEventListeners() {
+    elements.feedButton.addEventListener('click', feedPet);
+    elements.playButton.addEventListener('click', playWithPet);
+    elements.medButton.addEventListener('click', medPet);
+    elements.reviveButton.addEventListener('click', revivePet);
 
-// Initialize shake detection
-var shakeEvent = new Shake({threshold: 15});
-shakeEvent.start();
+    elements.buyFoodButton.addEventListener('click', () => {
+        if (coins >= 10) {
+            coins -= 10;
+            food = Math.min(food + 10, 100);
+            updateCurrency();
+            updateBars();
+        }
+    });
 
-// Handle shake event to earn coins
-window.addEventListener('shake', earnCoins, false);
+    elements.buyToyButton.addEventListener('click', () => {
+        if (coins >= 15) {
+            coins -= 15;
+            happiness = Math.min(happiness + 10, 100);
+            updateCurrency();
+            updateBars();
+        }
+    });
 
-// Retrieve and display the user's Telegram username
-window.Telegram.WebApp.ready(function() {
-    const username = window.Telegram.WebApp.initDataUnsafe.user.username;
-    document.getElementById('username').innerText = `${username} (CEO)`;
-});
+    elements.buyMedButton.addEventListener('click', () => {
+        if (coins >= 20) {
+            coins -= 20;
+            health = Math.min(health + 10, 100);
+            updateCurrency();
+            updateBars();
+        }
+    });
 
-// Periodically decrease food and happiness
-setInterval(decreaseFood, 1000);
-setInterval(decreaseHappiness, 1000);
+    // Retrieve and display the user's Telegram username
+    window.Telegram.WebApp.ready(function() {
+        const username = window.Telegram.WebApp.initDataUnsafe.user.username;
+        document.getElementById('username').innerText = `${username} (CEO)`;
+    });
+
+    // Periodically decrease food and happiness
+    setInterval(decreaseFood, 1000);
+    setInterval(decreaseHappiness, 1000);
+}
 
 // Initial updates
-updateBars();
-updateCurrency();
-updateLevel();
+function init() {
+    updateBars();
+    updateCurrency();
+    updateLevel();
+    initEventListeners();
+}
+
+// Run initial setup
+init();

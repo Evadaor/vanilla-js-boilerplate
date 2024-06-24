@@ -156,11 +156,19 @@ body {
     border-radius: 10px;
     cursor: pointer;
     transition: background 0.3s ease;
+    text-align: center;
+    flex-direction: column;
 }
 
 .menu-button img.icon {
     width: 24px;
     height: 24px;
+}
+
+.menu-button span {
+    display: block;
+    font-size: 0.75em;
+    margin-top: 5px;
 }
 
 .menu-button:hover {
