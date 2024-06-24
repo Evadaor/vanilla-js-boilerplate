@@ -1,200 +1,120 @@
-import { showToast, hideToast } from 'mark42';
+document.addEventListener("DOMContentLoaded", () => {
+    const tg = window.Telegram.WebApp;
+    const stepCountElement = document.getElementById("step-count");
+    const currencyAmountElement = document.getElementById("currency-amount");
+    const startButton = document.getElementById("start-button");
+    const stopButton = document.getElementById("stop-button");
 
-let health = 100;
-let food = 100;
-let happiness = 100;
-let coins = 46644;
-let level = 1;
-let experience = 0;
+    let stepCount = 0;
+    let coinCount = 0;
+    let accelerometerData = [];
+    let samplingRate = 20; // Example sampling rate in Hz
+    let isCounting = false;
+    let stepDetectionInterval;
 
-const elements = {
-    healthBar: document.querySelector('.health-bar'),
-    foodBar: document.querySelector('.food-bar'),
-    happinessBar: document.querySelector('.happiness-bar'),
-    levelBar: document.querySelector('.level-bar'),
-    feedButton: document.getElementById('feed-button'),
-    playButton: document.getElementById('play-button'),
-    medButton: document.getElementById('med-button'),
-    reviveButton: document.getElementById('revive-button'),
-    buyFoodButton: document.getElementById('buy-food'),
-    buyToyButton: document.getElementById('buy-toy'),
-    buyMedButton: document.getElementById('buy-med'),
-    currencyAmount: document.getElementById('currency-amount'),
-    levelDisplay: document.getElementById('level'),
-    coinsToLevelUp: document.getElementById('coins-to-level-up'),
-    menuButtons: document.querySelectorAll('.menu-button'),
-    pages: document.querySelectorAll('.page')
-};
+    function calculateMagnitude(x, y, z) {
+        return Math.sqrt(x * x + y * y + z * z);
+    }
 
-function updateBars() {
-    elements.healthBar.style.width = `${health}%`;
-    elements.foodBar.style.width = `${food}%`;
-    elements.happinessBar.style.width = `${happiness}%`;
-}
+    function lowPassFilter(data, alpha = 0.5) {
+        let filteredData = [];
+        filteredData[0] = data[0];
+        for (let i = 1; i < data.length; i++) {
+            filteredData[i] = alpha * data[i] + (1 - alpha) * filteredData[i - 1];
+        }
+        return filteredData;
+    }
 
-function updateCurrency() {
-    elements.currencyAmount.textContent = coins.toLocaleString();
-}
+    function removeMean(data) {
+        let mean = data.reduce((a, b) => a + b) / data.length;
+        return data.map(d => d - mean);
+    }
 
-function updateLevel() {
-    elements.levelDisplay.textContent = level;
-    elements.coinsToLevelUp.textContent = (level * 100000).toLocaleString();
-    elements.levelBar.style.width = `${(experience / (level * 100)) * 100}%`;
-}
+    function autoCorrelation(data) {
+        let n = data.length;
+        let result = new Array(n).fill(0);
+        for (let lag = 0; lag < n; lag++) {
+            for (let i = 0; i < n - lag; i++) {
+                result[lag] += data[i] * data[i + lag];
+            }
+        }
+        return result;
+    }
 
-function showPage(pageId) {
-    elements.pages.forEach(page => {
-        page.classList.toggle('active', page.id === pageId);
-    });
-}
+    function findFirstZeroCrossing(data) {
+        for (let i = 1; i < data.length; i++) {
+            if (data[i - 1] > 0 && data[i] <= 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
-elements.menuButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        showPage(button.getAttribute('data-page'));
-    });
+    function calculateSteps(data) {
+        let magnitudes = data.map(({ x, y, z }) => calculateMagnitude(x, y, z));
+        let filteredData = lowPassFilter(magnitudes);
+        let centeredData = removeMean(filteredData);
+        let autocorr = autoCorrelation(centeredData);
+        let firstZeroCrossing = findFirstZeroCrossing(autocorr);
+
+        if (firstZeroCrossing === -1) return 0;
+
+        let stepFrequency = samplingRate / firstZeroCrossing;
+        let stepCount = stepFrequency * (data.length / 3) / samplingRate;
+
+        return Math.round(stepCount);
+    }
+
+    function updateStepCount(count) {
+        stepCountElement.textContent = count;
+    }
+
+    function updateCoinCount() {
+        currencyAmountElement.textContent = coinCount;
+    }
+
+    function handleMotion(event) {
+        const { accelerationIncludingGravity } = event;
+        const { x, y, z } = accelerationIncludingGravity;
+        accelerometerData.push({ x, y, z });
+
+        const maxTuples = samplingRate * 4; // Assuming 4 seconds window
+        if (accelerometerData.length > maxTuples) {
+            accelerometerData.shift();
+        }
+    }
+
+    function startCounting() {
+        stepCount = 0;
+        accelerometerData = [];
+        isCounting = true;
+        startButton.style.display = "none";
+        stopButton.style.display = "inline-block";
+
+        window.addEventListener("devicemotion", handleMotion);
+
+        stepDetectionInterval = setInterval(() => {
+            if (accelerometerData.length > 0) {
+                let steps = calculateSteps(accelerometerData);
+                stepCount += steps;
+                coinCount += steps; // 1 coin per step
+                updateStepCount(stepCount);
+                updateCoinCount();
+            }
+        }, 1000); // Update step count every second
+    }
+
+    function stopCounting() {
+        isCounting = false;
+        startButton.style.display = "inline-block";
+        stopButton.style.display = "none";
+
+        window.removeEventListener("devicemotion", handleMotion);
+        clearInterval(stepDetectionInterval);
+    }
+
+    startButton.addEventListener("click", startCounting);
+    stopButton.addEventListener("click", stopCounting);
+
+    tg.ready();
 });
-
-function decreaseFood() {
-    if (food > 0) food -= 1;
-    if (food < 50 && health > 0) health -= 0.2;
-    if (food === 0 && health > 0) health -= 1;
-    if (health <= 0) {
-        health = 0;
-        document.querySelector('.actions').style.display = 'none';
-        elements.reviveButton.style.display = 'block';
-    }
-    updateBars();
-}
-
-function decreaseHappiness() {
-    if (happiness > 0) happiness -= 5;
-    if (happiness < 0) happiness = 0;
-    if (health <= 0) {
-        health = 0;
-        document.querySelector('.actions').style.display = 'none';
-        elements.reviveButton.style.display = 'block';
-    }
-    updateBars();
-}
-
-function feedPet() {
-    if (health > 0) {
-        food = Math.min(food + 10, 100);
-        updateBars();
-    }
-}
-
-function playWithPet() {
-    if (health > 0) {
-        happiness = Math.min(happiness + 10, 100);
-        updateBars();
-    }
-}
-
-function medPet() {
-    if (health > 0) {
-        health = Math.min(health + 10, 100);
-        updateBars();
-    }
-}
-
-function revivePet() {
-    health = 60;
-    food = 60;
-    happiness = 60;
-    document.querySelector('.actions').style.display = 'flex';
-    elements.reviveButton.style.display = 'none';
-    updateBars();
-}
-
-function earnCoins() {
-    coins += 3;
-    experience += 3;
-    if (experience >= level * 100) {
-        level++;
-        experience = 0;
-    }
-    updateCurrency();
-    updateLevel();
-    showToast("Coins earned!", { duration: 2000 });
-}
-
-// Shake detection
-let lastShakeTime = new Date().getTime();
-const shakeThreshold = 15;
-const shakeTimeout = 1000;
-
-function handleMotionEvent(event) {
-    const { acceleration } = event;
-    if (!acceleration) return;
-
-    const currentTime = new Date().getTime();
-    if (currentTime - lastShakeTime > shakeTimeout) {
-        const shakeMagnitude = Math.sqrt(acceleration.x ** 2 + acceleration.y ** 2 + acceleration.z ** 2);
-        if (shakeMagnitude > shakeThreshold) {
-            lastShakeTime = currentTime;
-            earnCoins();
-        }
-    }
-}
-
-if (window.DeviceMotionEvent) {
-    window.addEventListener('devicemotion', handleMotionEvent, false);
-} else {
-    alert('DeviceMotionEvent is not supported on your device.');
-}
-
-function initEventListeners() {
-    elements.feedButton.addEventListener('click', feedPet);
-    elements.playButton.addEventListener('click', playWithPet);
-    elements.medButton.addEventListener('click', medPet);
-    elements.reviveButton.addEventListener('click', revivePet);
-
-    elements.buyFoodButton.addEventListener('click', () => {
-        if (coins >= 10) {
-            coins -= 10;
-            food = Math.min(food + 10, 100);
-            updateCurrency();
-            updateBars();
-        }
-    });
-
-    elements.buyToyButton.addEventListener('click', () => {
-        if (coins >= 15) {
-            coins -= 15;
-            happiness = Math.min(happiness + 10, 100);
-            updateCurrency();
-            updateBars();
-        }
-    });
-
-    elements.buyMedButton.addEventListener('click', () => {
-        if (coins >= 20) {
-            coins -= 20;
-            health = Math.min(health + 10, 100);
-            updateCurrency();
-            updateBars();
-        }
-    });
-
-    // Retrieve and display the user's Telegram username
-    window.Telegram.WebApp.ready(function() {
-        const username = window.Telegram.WebApp.initDataUnsafe.user.username;
-        document.getElementById('username').innerText = `${username} (CEO)`;
-    });
-
-    // Periodically decrease food and happiness
-    setInterval(decreaseFood, 1000);
-    setInterval(decreaseHappiness, 1000);
-}
-
-// Initial updates
-function init() {
-    updateBars();
-    updateCurrency();
-    updateLevel();
-    initEventListeners();
-}
-
-// Run initial setup
-init();
